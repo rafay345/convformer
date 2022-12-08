@@ -110,8 +110,8 @@ def train(model, device, epochs, trainloader, testloader, verbose = False):
             train_total += target.size(0)
             if batch_idx%100 == 0 and verbose:
                 print(f'Loss: {loss.item()}')
-        if epoch % 4 == 0:
-            scheduler.step()
+        
+        scheduler.step()
         test_correct = 0
         test_total = 0
         with torch.no_grad():
