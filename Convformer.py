@@ -203,13 +203,17 @@ class ConvMixer_block(nn.Module):
         return x
 
 
+
 class Model(nn.Module):
     def __init__(self, *, image_size, patch_size, dim, hidden_dim, kernel_size, indim, outdim, numblocks, block_type, heads = 8, dim_head = 64, dropout = 0,channels = 3,  emb_dropout = 0., num_classes = 10):
         super().__init__()
         block_types = {'inline':CT_block_inline, 'concat':CT_block_parallel_concat, 'mm':CT_block_parallel_mm, 'pct': PCT_block, 'cm':ConvMixer_block}
         CT_block = block_types[block_type]
         self.enc = Encodings(image_size = image_size, patch_size = patch_size, dim = dim, channels = channels)
-        self.CTB = nn.ModuleList([CT_block(dim = dim, hidden_dim = hidden_dim, kernel_size = kernel_size, indim = indim, outdim = outdim) for i in range(numblocks)])
+        self.CTB = nn.ModuleList([nn.Sequential(
+            CT_block(dim = dim, hidden_dim = hidden_dim, kernel_size = kernel_size, indim = indim, outdim = outdim),
+            nn.Dropout(p = 0.2)
+         ) for i in range(numblocks)])
         self.final = nn.Sequential(
             nn.AdaptiveAvgPool2d((1,1)),
             nn.Flatten(),

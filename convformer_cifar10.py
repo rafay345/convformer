@@ -98,6 +98,7 @@ def train(model, device, epochs, trainloader, testloader, verbose = False):
         for batch_idx, (data, target) in enumerate(tqdm(trainloader)):
             if torch.cuda.is_available():
                 data, target = data.to(device), target.to(device)
+            model.train()
             optimizer.zero_grad()
             outputs = model(data)
             loss = criterion(outputs, target)
@@ -115,6 +116,7 @@ def train(model, device, epochs, trainloader, testloader, verbose = False):
             for images, labels in testloader:
                 images, labels = images.to(device), labels.to(device)
                 # calculate outputs by running images through the network
+                model.eval()
                 outputs = model(images)
                 # the class with the highest energy is what we choose as prediction
                 _, predicted = torch.max(outputs.data, 1)
@@ -127,6 +129,7 @@ def train(model, device, epochs, trainloader, testloader, verbose = False):
     total_time = time.time() - start_time
     return train_accs, test_accs, {'time':total_time/epochs, 'params': sum(p.numel() for p in model.parameters())} 
         
+
 
 '''
 train models and save results
