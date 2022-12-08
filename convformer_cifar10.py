@@ -38,7 +38,7 @@ for ps in pss:
         for depth in depths:
             params.append({'block_type':block_type, 'depth':depth, 'patch_size':(ps,ps)})
 
-params.append({'block_type':'concat', 'depth':15, 'patch_size':(4,4)})
+params.append({'block_type':'concat', 'depth':20, 'patch_size':(4,4)})
 
 
 
@@ -141,7 +141,7 @@ if not os.path.exists(newpath):
 
 num_models_done = len(os.listdir('./results'))
 
-epochs = 40
+epochs = 75
 for param in params[num_models_done:]:
     print(param)
     model = get_model(param['block_type'],param['depth'],param['patch_size'])
