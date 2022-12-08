@@ -62,7 +62,7 @@ transform = transforms.Compose(
     [transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-batch_size = 32
+batch_size = 128
 
 trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
@@ -83,7 +83,7 @@ def train(model, device, epochs, trainloader, testloader, verbose = False):
     start_time = time.time()
     model = model.to(device)    
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
     lambda1 = lambda epoch: 0.89**(2*epoch)
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,lambda1)
     train_accs = np.zeros(epochs)
@@ -136,8 +136,10 @@ newpath = './results'
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
+num_models_done = len(os.listdir('./results'))
+
 epochs = 20
-for param in params:
+for param in params[num_models_done:]:
     print(param)
     model = get_model(param['block_type'],param['depth'],param['patch_size'])
     train_accs, test_accs, info = train(model = model, device = device, epochs = epochs, trainloader = trainloader, testloader = testloader)
