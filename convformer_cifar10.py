@@ -49,7 +49,7 @@ get on gpu
 '''
 
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 
 
@@ -81,6 +81,7 @@ define training
 def train(model, device, epochs, trainloader, testloader, verbose = False):
 
     start_time = time.time()
+    model= nn.DataParallel(model)
     model = model.to(device)    
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
