@@ -178,28 +178,49 @@ class CT_block_parallel_mm(nn.Module):
     def forward(self, x):
         x1 = self.DC(x)
         x2 = self.T(x)
-        x = x1*x2
+        x = x1@x2
         x = self.PC(x)
         return x
 
-class ConvTransformerModel(nn.Module):
+class PCT_block(nn.Module):
+    def __init__(self, *, dim, hidden_dim, kernel_size, outdim, indim = 0, heads = 8, dim_head = 64, dropout = 0):
+        super().__init__()
+        self.T = Transformer(dim = dim, hidden_dim = dim)
+        self.PC = PointwiseConv(indim = indim, outdim = outdim)
+    def forward(self, x):
+        x = self.T(x)
+        x = self.PC(x)
+        return x
+
+class ConvMixer_block(nn.Module):
+    def __init__(self, *, dim, hidden_dim, kernel_size, outdim, indim = 0, heads = 8, dim_head = 64, dropout = 0):
+        super().__init__()
+        self.DC = DepthwiseConv(dim = dim, kernel_size = kernel_size)
+        self.PC = PointwiseConv(indim = indim, outdim = outdim)
+    def forward(self, x):
+        x = self.DC(x)
+        x = self.PC(x)
+        return x
+
+
+class Model(nn.Module):
     def __init__(self, *, image_size, patch_size, dim, hidden_dim, kernel_size, indim, outdim, numblocks, block_type, heads = 8, dim_head = 64, dropout = 0,channels = 3,  emb_dropout = 0., num_classes = 10):
         super().__init__()
-        block_types = {'inline':CT_block_inline, 'concat':CT_block_parallel_concat, 'mm':CT_block_parallel_mm}
+        block_types = {'inline':CT_block_inline, 'concat':CT_block_parallel_concat, 'mm':CT_block_parallel_mm, 'pct': PCT_block, 'cm':ConvMixer_block}
         CT_block = block_types[block_type]
-        self.enc = Encodings(image_size = image_size, patch_size = patch_size, dim = dim)
+        self.enc = Encodings(image_size = image_size, patch_size = patch_size, dim = dim, channels = channels)
         self.CTB = nn.ModuleList([CT_block(dim = dim, hidden_dim = hidden_dim, kernel_size = kernel_size, indim = indim, outdim = outdim) for i in range(numblocks)])
         self.final = nn.Sequential(
+            nn.AdaptiveAvgPool2d((1,1)),
             nn.Flatten(),
-            nn.Linear(dim * (image_size[0]//patch_size[0])**2, 100),
+            nn.Linear(dim, 100),
             nn.GELU(),
             nn.Linear(100, num_classes)
         )
     def forward(self, x):
         x = self.enc(x)
         for block in self.CTB:
-            x = block(x)
-        print(x.shape)
+            x = block(x) + x
         x = self.final(x)
         return x
 
