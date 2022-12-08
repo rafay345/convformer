@@ -20,6 +20,7 @@ import pandas as pd
 image_size = (32,32)
 channels = 3 
 kernel_size = 3
+batch_size = 512
 
 
 def get_model(block_type, depth, patch_size = (4,4)):
@@ -62,7 +63,7 @@ transform = transforms.Compose(
     [transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-batch_size = 256
+
 
 trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
@@ -84,7 +85,7 @@ def train(model, device, epochs, trainloader, testloader, verbose = False):
     model = model.to(device)    
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
-    lambda1 = lambda epoch: 0.89**(2*epoch)
+    lambda1 = lambda epoch: 0.89**(1.5*epoch)
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,lambda1)
     train_accs = np.zeros(epochs)
     test_accs = np.zeros(epochs)
