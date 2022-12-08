@@ -20,6 +20,8 @@ import pandas as pd
 image_size = (32,32)
 channels = 3 
 kernel_size = 3
+
+#set batch size
 batch_size = 512
 
 
@@ -36,10 +38,7 @@ for ps in pss:
         for depth in depths:
             params.append({'block_type':block_type, 'depth':depth, 'patch_size':(ps,ps)})
 
-for block_type in block_types:
-    params.append({'block_type':block_type, 'depth':1, 'patch_size':(8,8)})
-    params.append({'block_type':block_type, 'depth':34, 'patch_size':(2,2)})
-
+params.append({'block_type':'concat', 'depth':15, 'patch_size':(4,4)})
 
 
 
@@ -85,7 +84,7 @@ def train(model, device, epochs, trainloader, testloader, verbose = False):
     model = model.to(device)    
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
-    lambda1 = lambda epoch: 0.89**(1.5*epoch)
+    lambda1 = lambda epoch: 0.89**(1.25*epoch)
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,lambda1)
     train_accs = np.zeros(epochs)
     test_accs = np.zeros(epochs)
@@ -142,7 +141,7 @@ if not os.path.exists(newpath):
 
 num_models_done = len(os.listdir('./results'))
 
-epochs = 20
+epochs = 40
 for param in params[num_models_done:]:
     print(param)
     model = get_model(param['block_type'],param['depth'],param['patch_size'])
