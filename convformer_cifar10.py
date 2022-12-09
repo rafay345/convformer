@@ -38,7 +38,7 @@ for ps in pss:
         for depth in depths:
             params.append({'block_type':block_type, 'depth':depth, 'patch_size':(ps,ps)})
 
-params.append({'block_type':'concat', 'depth':20, 'patch_size':(4,4)})
+params.append({'block_type':'concat', 'depth':6, 'patch_size':(8,8)})
 
 
 
@@ -85,7 +85,7 @@ def train(model, device, epochs, trainloader, testloader, verbose = False):
     model = model.to(device)    
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
-    lambda1 = lambda epoch: 0.89**(1.25*epoch)
+    lambda1 = lambda epoch: 0.87**(1.75*epoch)
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,lambda1)
     train_accs = np.zeros(epochs)
     test_accs = np.zeros(epochs)
