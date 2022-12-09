@@ -143,7 +143,7 @@ if not os.path.exists(newpath):
 
 num_models_done = len(os.listdir('./results'))
 
-epochs = 75
+epochs = 100
 for param in params[num_models_done:]:
     print(param)
     model = get_model(param['block_type'],param['depth'],param['patch_size'])
